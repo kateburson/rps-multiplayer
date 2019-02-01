@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Rock, Paper, Scissors</title>
+
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <!-- local stylesheet -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <!-- Sign-Up Card-->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">Register to Play</div>
+                        <div class="card-body">
+                        <!-- Sign-up Form (note the various input "types")-->
+                        <form role="form">
+                            <div class="form-group">
+                                <label for="name-input">Name:</label>
+                                <input class="form-control" id="name-input" type="text">
+                            </div>
+                            <button class="btn btn-default" id="add-player" type="submit">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2>Player 1</h2>
+    <h3 id="p1-name"></h3>
+    <p id="p1-fact"></p>
+
+    <h2>Player 2</h2>
+    <h3 id="p2-name"></h3>
+    <p id="p2-fact"></p>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/5.8.1/firebase.js"></script>
+    <script src="assets/javascript/rpsMultiplayer.js"></script>
+
+</body>
+</html>
