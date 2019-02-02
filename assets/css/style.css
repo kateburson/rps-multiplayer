@@ -1,0 +1,16 @@
+h1, h3 {
+    text-align: center;
+}
+
+#player1 {
+    width: 50%;
+    float: left;
+    padding: 25px;
+    border-right: solid 3pt;
+}
+
+#player2 {
+    width: 50%;
+    float: right;
+    padding: 25px;
+}

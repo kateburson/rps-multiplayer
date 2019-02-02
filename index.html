@@ -16,37 +16,85 @@
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
+    <header>
+        <h1>Rock. Paper. Diss.</h1>
+        <h3>Where well-crafted insults cut better than scissors.</h3>
+    </header>
+       
+    <!-- sign up form -->
     <div class="container">
-        <div class="row">
+
+        <div id="hello" class="row">
             <!-- Sign-Up Card-->
             <div class="col-lg-6">
                 <div class="card">
-                    <div class="card-header">Register to Play</div>
+                    <div class="card-header">Hello,</div>
                         <div class="card-body">
                         <!-- Sign-up Form (note the various input "types")-->
                         <form role="form">
                             <div class="form-group">
-                                <label for="name-input">Name:</label>
+                                <label for="name-input">My name is:</label>
                                 <input class="form-control" id="name-input" type="text">
                             </div>
-                            <button class="btn btn-default" id="add-player" type="submit">Submit</button>
+                            <button class="btn btn-default" id="add-player" type="submit">Play</button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
+
+    <!-- player 1 (left) -->
+    <div id="player1">
+        <h2 id="p1-name"></h2>
+        <p id="p1-score"></p>
+        <p id="p1-turn"></p>
+        <div id="p1-choice">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios1" value="option1" checked>
+                <label class="form-check-label" for="exampleRadios1">Rock</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios2" value="option2">
+                <label class="form-check-label" for="exampleRadios2">Paper</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios3" value="option3"><label class="form-check-label" for="exampleRadios3">Diss</label>
+                <br>
+                <input type="text-area"/>
+            </div>
+            <button class="btn" id="go" type="submit">Submit</button>
+        </div>
+
     </div>
 
-    <h2>Player 1</h2>
-    <h3 id="p1-name"></h3>
-    <p id="p1-fact"></p>
+    <!-- player 2 (right) -->
+    <div id="player2">
+        <h2 id="p2-name"></h2>
+        <p id="p2-score"></p>
+        <p id="p2-turn"></p>
+        <div id="p2-choice">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios1" value="option1" checked>
+                <label class="form-check-label" for="exampleRadios1">Rock</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios2" value="option2">
+                <label class="form-check-label" for="exampleRadios2">Paper</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios3" value="option3"><label class="form-check-label" for="exampleRadios3">Diss</label>
+                <br>
+                <input type="text-area"/>
+            </div>
+            <button class="btn" id="go" type="submit">Submit</button>
+        </div>
+    </div>
 
-    <h2>Player 2</h2>
-    <h3 id="p2-name"></h3>
-    <p id="p2-fact"></p>
+</div>
 
-    <!-- Firebase -->
+    <!-- firebase -->
     <script src="https://www.gstatic.com/firebasejs/5.8.1/firebase.js"></script>
+    <!-- my js -->
     <script src="assets/javascript/rpsMultiplayer.js"></script>
 
 </body>
