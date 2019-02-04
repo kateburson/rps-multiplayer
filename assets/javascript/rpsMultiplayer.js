@@ -70,16 +70,16 @@ database.ref().on('child_added', function(snapshot) {
 
     if(count === 1) {
         player1key = snapshot.key;
-        var p1name = player1.name;
-        var p1score = player1.score;
+        var p1name = snapshot.val().player1.name;
+        var p1score = snapshot.val().player1.score;
     
         $('#p1-name').text(p1name);
         $('#p1-score').text('Score: ' + p1score);
 
     } else if(count === 2) {
     player2key = snapshot.key;
-    var p2name = player2.name;
-    var p2score = player2.score;
+    var p2name = snapshot.val().player2.name;
+    var p2score = snapshot.val().player2.score;
 
     $('#p2-name').text(p2name);
     $('#p2-score').text('Score: ' + p2score);
@@ -150,6 +150,8 @@ $('#p2go').on('click', function() {
     event.preventDefault();
     player2Go();
     p2clicked = true;
+
+    winner();
     // player1.turn = true;
     // player2.turn = false;
 });
@@ -167,7 +169,6 @@ if(p1clicked === true && p2clicked === true) {
 database.ref().on('child_changed', function(snapshot) {
     console.log('data read');
     var snap = snapshot.val();
-
     $('#p1-choice').text(snap.player1.choice);
     $('#p1-score').text(snap.player1.score);
     $('#p2-choice').text(snap.player2.choice);
