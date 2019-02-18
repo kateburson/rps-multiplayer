@@ -38,17 +38,16 @@ var player2 = {
     clicked: false
 };
 
-var playerKeys = [];
+var playerKey = null;
 
 function initializeUser() {
     var name = $('#name-input').val();
-
     var entry = database.ref().push({
         'name': name,
         'score': 0,
-        'choice': null
     })
-    playerKeys.push(entry.key);
+    playerKey = entry.key;
+    console.log('player key: ', playerKey)
 };
 
 $('#add-player').on('click', function() {
@@ -111,42 +110,12 @@ $('#add-player').on('click', function() {
 
 // });
 
-function player1Go() {
-    // console.log(database.ref(player1key))
-    // if (player1.clicked === true) {
-    //     return
-    // }
-    // var radioValue = $('input[name="p1"]:checked').val(); 
-    // player1.choice = radioValue;
-    // console.log(player1.choice);
-    // player1.clicked =  true;
-
-    // database.ref(player1key).update({
-    //     player1: player1
-    // });
-
-    database.ref(player1key).update({
-       choice: $('input[name="p1"]:checked').val(),
+function submitChoice() {
+    database.ref(playerKey).update({
+       choice: $('input[name="r"]:checked').val()
     });
 };
 
-function player2Go() {
-    // if (player2.clicked === true) {
-    //     return
-    // }
-    // var radioValue = $('input[name="p2"]:checked').val(); 
-    // player2.choice = radioValue;
-    // console.log(player2.choice);
-    // player2.clicked = true;
-
-    // database.ref(player2key).update({
-    //     player2: player2
-    // });
-
-    database.ref(player2key).update({
-        choice: $('input[name="p2"]:checked').val(),
-    });
-};
 
 // function winner(playerLeft, playerRight) {
 //     if(playerLeft.choice === 'rock' && playerRight.choice === 'paper') {
@@ -203,15 +172,11 @@ function playGame(playerLeft, playerRight) {
     }
 };
  
-$('#p1go').on('click', function() {
+$('#go').on('click', function() {
     event.preventDefault();
-    player1Go();
+    submitChoice();
 });
 
-$('#p2go').on('click', function() {
-    event.preventDefault();
-    player2Go();
-});
 
 // database.ref().on('value', function(snapshot) {
 //     console.log('data read');
@@ -240,13 +205,68 @@ $('#p2go').on('click', function() {
 // );
 
 database.ref().on('value', function(snapshot) {
-    return
     var snap = snapshot.val();
-    var player1Db = snap[player1key].player1;
-    var player2Db = snap[player2key].player2;
-    console.log(player1Db, player2Db);
-    if(player1Db.choice != null && player2Db.choice != null) {
-        var winner = playGame(player1Db, player2Db);
-        // if(winner.name === )
-    } 
+    var currentPlayer = snap[playerKey];    
+    if (playerKey === null || currentPlayer.choice === null) {
+        return
+    }
+
+    var playerKeys = Object.keys(snap).filter(function(key) {return key!== playerKey}).filter(function(key) {return snap[key].choice})
+    var playersList = playerKeys.map(function(key) {return snap[key]})
+
+    var opponentIndex = randomIndex(playersList)
+    var opponentPlayerKey = playerKeys[opponentIndex]
+    var opponent = snap[opponentPlayerKey];
+    console.log('n other keys', playerKeys.length)
+
+    console.log("VALUE CHANGE", currentPlayer, opponent)
+
+    if (opponentPlayerKey === null) {
+        console.log('opponent player key is nulll')
+        return 
+    }
+
+    if (opponentPlayerKey === undefined) {
+        console.log('opponent player key is underfined')
+        return 
+    }
+
+    if (opponentPlayerKey !== null || opponentPlayerKey !== undefined) {
+        console.log("PLAY GAME", playerKey, opponentPlayerKey)
+        
+        console.log("players", currentPlayer, opponent);
+        var winner = playGame(currentPlayer, opponent);
+        console.log(winner, currentPlayer === winner, opponent === winner);
+        if(winner === currentPlayer) {
+            console.log("we won", winner)
+            currentPlayer.score = currentPlayer.score + 1;
+        } else if (winner === opponent) {
+            console.log('opponent won', winner)
+            opponent.score = opponent.score + 1;
+        }
+        currentPlayer.choice = null;
+        opponent.choice = null;
+        database.ref(playerKey).update(currentPlayer);
+        database.ref(opponentPlayerKey).update(opponent);
+    }
+
 });
+
+function getRandomInt(max) {
+    return Math.floor(Math.random() * Math.floor(max));
+  }
+  
+
+function isViable(player) {
+    return player.choice !== null && player.choice !== undefined
+}
+
+function randomIndex(playerList) {
+    var viablePlayers = playerList.filter(isViable)
+    var randomIndex = getRandomInt(viablePlayers.length - 1)
+    console.log(randomIndex, viablePlayers[randomIndex])
+    return randomIndex;
+
+    console.log('something went very wrong')
+    return null;
+}
