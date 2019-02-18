@@ -45,6 +45,18 @@ $('#add-player').on('click', function() {
 });
 
 // define functions
+function toggleComponent(id, show) {
+  // toggle between showing a component
+  // using jquery to select the component
+  // with supplied id and using css to style it
+  $(id).css({ visibility: show ? 'visible' : 'hidden' });
+}
+
+function toggleGame(show) {
+  toggleComponent('#hello', show !== true); // 'hello' is the id of the login component
+  toggleComponent('#player1', show === true); // 'player1' is the id of the game component
+}
+
 function initializeUser() {
   var name = $('#name-input').val();
   var entry = database.ref().push({
@@ -52,7 +64,8 @@ function initializeUser() {
     score: 0,
   });
   playerKey = entry.key;
-  console.log('player key: ', playerKey);
+  toggleGame(true);
+  console.log('logged in as: ', name, playerKey);
 }
 
 function submitChoice() {
@@ -61,42 +74,12 @@ function submitChoice() {
   });
 }
 
-// function winner(playerLeft, playerRight) {
-//     if(playerLeft.choice === 'rock' && playerRight.choice === 'paper') {
-//         playerRight.score++;
-//         database.ref().update({
-//             player2:player2.score
-//         })
-//     } else if(playerLeft.choice === 'paper' && playerRight.choice === 'rock') {
-//         playerLeft.score++;
-//         database.ref().update({
-//             player1:player1.score
-//         })
-//     } else if(playerLeft.choice === 'paper' && playerRight.choice === 'diss') {
-//         playerRight.score++;
-//         database.ref().update({
-//             player2:player2.score
-//         })
-//     } else if(playerLeft.choice === 'diss' && playerRight.choice === 'paper') {
-//         playerLeft.score++;
-//         database.ref().update({
-//             player1:player1.score
-//         })
-//     } else if(playerLeft.choice === 'diss' && playerRight.choice === 'rock') {
-//         playerRight.score++;
-//         database.ref().update({
-//             player2:player2.score
-//         })
-//     } else if(playerLeft.choice === 'rock' && playerRight.choice === 'diss') {
-//         playerLeft.score++;
-//         database.ref().update({
-//             player1:player1.score
-//         })
-//     } else if(playerLeft.choice === playerRight.choice) {
-//         playerLeft.score = playerLeft.score;
-//         playerRight.score = playerRight.score;
-//     }
-// };
+function initializeComponents() {
+  // initialze the default visbility of components on our page
+  toggleGame(false);
+}
+
+initializeComponents();
 
 function playGame(playerLeft, playerRight) {
   if (playerLeft.choice === 'rock' && playerRight.choice === 'paper') {
