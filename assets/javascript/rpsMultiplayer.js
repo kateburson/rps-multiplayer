@@ -12,38 +12,7 @@ firebase.initializeApp(config);
 // define variables
 var database = firebase.database();
 
-var started = false;
-// var p1clicked = false;
-// var p2clicked = false;
-var count = 0;
-
-var player1key = '';
-var player2key = '';
-
-var player1 = {
-  name: '',
-  turn: false,
-  score: 0,
-  choice: '',
-  diss: '',
-  clicked: false,
-};
-var player2 = {
-  name: '',
-  turn: false,
-  score: 0,
-  choice: '',
-  diss: '',
-  clicked: false,
-};
-
 var playerKey = null;
-
-$('#add-player').on('click', function() {
-  event.preventDefault();
-  initializeUser();
-});
-
 // define functions
 function toggleComponent(id, show) {
   // toggle between showing a component
@@ -65,7 +34,21 @@ function initializeUser() {
   });
   playerKey = entry.key;
   toggleGame(true);
-  console.log('logged in as: ', name, playerKey);
+  //   login(user);
+  console.log('logged in as: ', name, entry, playerKey);
+}
+
+function login(user) {
+  console.log('attempting to login as: ', user);
+  console.log('logged in as: ', user);
+}
+
+function updateProfile(user) {
+  console.log('attempting to update profile with: ', user);
+  $('#profile-name').setText(user.name);
+  $('#profile-score').setText(user.score);
+  $('#profile-choice').setText(user.choice);
+  console.log('updated profile with: ', user);
 }
 
 function submitChoice() {
@@ -78,8 +61,6 @@ function initializeComponents() {
   // initialze the default visbility of components on our page
   toggleGame(false);
 }
-
-initializeComponents();
 
 function playGame(playerLeft, playerRight) {
   if (playerLeft.choice === 'rock' && playerRight.choice === 'paper') {
@@ -99,37 +80,7 @@ function playGame(playerLeft, playerRight) {
   }
 }
 
-$('#go').on('click', function() {
-  event.preventDefault();
-  submitChoice();
-});
-
-// database.ref().on('value', function(snapshot) {
-//     console.log('data read');
-//     var snap = snapshot.val();
-//     var player1Db = snap[player1key].player1;
-//     var player2Db = snap[player2key].player2;
-//     if(player1Db.clicked === true && player2Db.clicked === true) {
-//         winner(player1Db, player2Db);
-//         $('#p1-choice').text(player1Db.choice);
-//         $('#p1-score').text(player1Db.score);
-//         $('#p2-choice').text(player2Db.choice);
-//         $('#p2-score').text(player2Db.score);
-//         player1.clicked = false;
-//         player2.clicked = false;
-//         player1Db.clicked = false;
-//         player2Db.clicked = false;
-//         database.ref().update({
-//             player1:player1,
-//             player2:player2
-//         })
-//     }
-//     },
-//     function(errorObject) {
-//         console.log('The read failed: ' + errorObject.code);
-//     }
-// );
-
+// database logic
 database.ref().on('value', function(snapshot) {
   var snap = snapshot.val();
   var currentPlayer = snap[playerKey];
@@ -185,6 +136,7 @@ database.ref().on('value', function(snapshot) {
   }
 });
 
+// utility belt
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
 }
@@ -202,3 +154,17 @@ function randomIndex(playerList) {
   console.log('something went very wrong');
   return null;
 }
+
+// attach callbacks
+$('#add-player').on('click', function() {
+  event.preventDefault();
+  initializeUser();
+});
+
+$('#go').on('click', function() {
+  event.preventDefault();
+  submitChoice();
+});
+
+// runtime
+initializeComponents();
