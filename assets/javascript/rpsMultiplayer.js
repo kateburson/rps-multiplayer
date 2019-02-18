@@ -14,8 +14,8 @@
 var database = firebase.database();
 
 var started = false;
-var p1clicked = false;
-var p2clicked = false;
+// var p1clicked = false;
+// var p2clicked = false;
 var count = 0;
 
 var player1key = '';
@@ -26,14 +26,16 @@ var player1 = {
     turn: false,
     score: 0,
     choice: '',
-    diss: ''
+    diss: '',
+    clicked: ''
 };
 var player2 = {
     name: '',
     turn: false,
     score: 0,
     choice: '',
-    diss: ''
+    diss: '',
+    clicked: ''
 };
 
 
@@ -94,96 +96,100 @@ function player1Go() {
     var radioValue = $('input[name="p1"]:checked').val(); 
     player1.choice = radioValue;
     console.log(player1.choice);
-};
-
-function player2Go() {
-    var radioValue = $('input[name="p2"]:checked').val(); 
-    player2.choice = radioValue;
-    console.log(player2.choice);
-    // player1.turn = true;
-};
-
-function winner() {
-    if(player1.choice === 'rock' && player2.choice === 'paper') {
-        player2.score++;
-        
-    } else if(player1.choice === 'paper' && player2.choice === 'rock') {
-        player1.score++;
-        database.ref().update({
-            player1:player1.score
-        })
-    } else if(player1.choice === 'paper' && player2.choice === 'diss') {
-        player2.score++;
-        database.ref().update({
-            player2:player2.score
-        })
-    } else if(player1.choice === 'diss' && player2.choice === 'paper') {
-        player1.score++;
-        database.ref().update({
-            player1:player1.score
-        })
-    } else if(player1.choice === 'diss' && player2.choice === 'rock') {
-        player2.score++;
-        database.ref().update({
-            player2:player2.score
-        })
-    } else if(player1.choice === 'rock' && player2.choice === 'diss') {
-        player1.score++;
-        database.ref().update({
-            player1:player1.score
-        })
-    } else if(player1.choice === player2.choice) {
-        player1.score = player1.score;
-        player2score = player2.score;
-    }
-};
- 
-$('#p1go').on('click', function() {
-    event.preventDefault();
-    player1Go();
-    p1clicked =  true;
-    // player1.turn = false;
-    // player2.turn = true;
-});
-
-$('#p2go').on('click', function() {
-    event.preventDefault();
-    player2Go();
-    p2clicked = true;
-
-    winner();
-    // player1.turn = true;
-    // player2.turn = false;
-});
-
-if(p1clicked === true && p2clicked === true) {
-    database.ref(player2key).update({
-        player2: player2
-    });
+    player1.clicked =  true;
 
     database.ref(player1key).update({
         player1: player1
     });
 };
 
-database.ref().on('child_changed', function(snapshot) {
+function player2Go() {
+    var radioValue = $('input[name="p2"]:checked').val(); 
+    player2.choice = radioValue;
+    console.log(player2.choice);
+    player2.clicked = true;
+
+    database.ref(player2key).update({
+        player2: player2
+    });
+};
+
+function winner(playerLeft, playerRight) {
+    if(playerLeft.choice === 'rock' && playerRight.choice === 'paper') {
+        playerRight.score++;
+        database.ref().update({
+            player2:player2.score
+        })
+    } else if(playerLeft.choice === 'paper' && playerRight.choice === 'rock') {
+        playerLeft.score++;
+        database.ref().update({
+            player1:player1.score
+        })
+    } else if(playerLeft.choice === 'paper' && playerRight.choice === 'diss') {
+        playerRight.score++;
+        database.ref().update({
+            player2:player2.score
+        })
+    } else if(playerLeft.choice === 'diss' && playerRight.choice === 'paper') {
+        playerLeft.score++;
+        database.ref().update({
+            player1:player1.score
+        })
+    } else if(playerLeft.choice === 'diss' && playerRight.choice === 'rock') {
+        playerRight.score++;
+        database.ref().update({
+            player2:player2.score
+        })
+    } else if(snap[player1key].player1.choice === 'rock' && playerRight.choice === 'diss') {
+        playerLeft.score++;
+        database.ref().update({
+            player1:player1.score
+        })
+    } else if(playerLeft.choice === playerRight.choice) {
+        playerLeft.score = playerLeft.score;
+        playerRight.score = playerRight.score;
+    }
+};
+ 
+$('#p1go').on('click', function() {
+    event.preventDefault();
+    play();
+    // if(player1.turn === true) {
+    //     player1Go();
+    // }
+    // player1.turn = false;
+    // player2.turn = true;
+});
+
+$('#p2go').on('click', function() {
+    event.preventDefault();
+    play();
+    // if(player2.turn === true) {
+    //     player2Go();
+    // }
+    // player1.turn = true;
+    // player2.turn = false;
+});
+
+database.ref().on('value', function(snapshot) {
     console.log('data read');
     var snap = snapshot.val();
-    $('#p1-choice').text(snap.player1.choice);
-    $('#p1-score').text(snap.player1.score);
-    $('#p2-choice').text(snap.player2.choice);
-    $('#p2-score').text(snap.player2.score);
-
-
-    
-    }, function(errorObject) {
-    console.log('The read failed: ' + errorObject.code);
-});
-    
-
-
-
-
-
-
-
+    var player1 = snap[player1key].player1;
+    var player2 = snap[player2key].player2;
+    console.log(snapshot, snap);
+    console.log(player1.clicked);
+    console.log(player2.clicked);
+    if(player1.clicked === true && player2.clicked === true) {
+        winner(player1, player2);
+        $('#p1-choice').text(player1.choice);
+        $('#p1-score').text(player1.score);
+        $('#p2-choice').text(player2.choice);
+        $('#p2-score').text(player2.score);
+    } 
+    player1.clicked = false;
+    player2.clicked = false;
+    },
+    function(errorObject) {
+        console.log('The read failed: ' + errorObject.code);
+    }
+);
