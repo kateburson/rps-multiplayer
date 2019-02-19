@@ -9,17 +9,11 @@ var config = {
 };
 firebase.initializeApp(config);
 
-// define variables
+// initialize variables
 var database = firebase.database();
 var playerKey = null;
 
 // define functions
-
-// // utility belt
-// function getRandomInt(max) {
-//   return Math.floor(Math.random() * Math.floor(max));
-// }
-
 // database logic
 function initializeUser(name) {
   var userRef = database.ref().push({
@@ -123,38 +117,22 @@ function updateGameState(snapshot) {
     winner = playGame(player, opponent);
     if (winner === player) {
       console.log('player won');
+      // report victory only if we're the winner
       updatePlayers(playerKey, opponentKey, playerKey);
-      // animateOutcome('won!');
       alert('won!');
     } else if (winner === opponent) {
       console.log('opponent won');
-      //animateOutcome('lost!');
       alert('lost!');
       // dont report victory if loser
-      // updatePlayers(playerKey, opponentKey, opponentKey);
+      updatePlayers(playerKey, opponentKey, null);
     } else {
       console.log('tie');
       updatePlayers(playerKey, opponentKey, null);
-      //animateOutcome('tie!');
       alert('tie!');
     }
   } else {
     console.log('no opponent found!');
   }
-
-  //   updateComponents(snap[playerKey]);
-}
-
-function animateOutcome(outcome, color = 'black') {
-  // short dumb animation...because i need something for myself...
-  $('#profile-choice').html(outcome);
-  $('#profile-choice').css({ color });
-  toggleComponent('go', false);
-  setTimeout(function() {
-    $('#profile-choice').html('not yet submitted');
-    $('#profile-choice').css({ color: 'black' });
-    toggleComponent('go', true);
-  }, 3000);
 }
 
 function login() {
@@ -189,5 +167,5 @@ $('#go').on('click', function() {
   submitChoice();
 });
 
-// runtime
+// post init runtime
 updatePageState({});
