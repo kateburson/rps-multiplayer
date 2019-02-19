@@ -11,57 +11,40 @@ firebase.initializeApp(config);
 
 // define variables
 var database = firebase.database();
-
 var playerKey = null;
+
 // define functions
-function toggleComponent(id, show) {
-  // toggle between showing a component
-  // using jquery to select the component
-  // with supplied id and using css to style it
-  $(id).css({ visibility: show ? 'visible' : 'hidden' });
-}
 
-function toggleGame(show) {
-  toggleComponent('#hello', show !== true); // 'hello' is the id of the login component
-  toggleComponent('#player1', show === true); // 'player1' is the id of the game component
-}
+// // utility belt
+// function getRandomInt(max) {
+//   return Math.floor(Math.random() * Math.floor(max));
+// }
 
-function initializeUser() {
-  var name = $('#name-input').val();
-  var entry = database.ref().push({
+// database logic
+function initializeUser(name) {
+  var userRef = database.ref().push({
     name: name,
     score: 0,
   });
-  playerKey = entry.key;
-  toggleGame(true);
-  //   login(user);
-  console.log('logged in as: ', name, entry, playerKey);
+
+  return userRef.key;
 }
 
-function login(user) {
-  console.log('attempting to login as: ', user);
-  console.log('logged in as: ', user);
-}
+function updatePlayers(leftKey, rightKey, winnerKey) {
+  database.ref().transaction(function(users) {
+    // update winner
+    users[leftKey].choice = null;
+    users[rightKey].choice = null;
 
-function updateProfile(user) {
-  console.log('attempting to update profile with: ', user);
-  $('#profile-name').setText(user.name);
-  $('#profile-score').setText(user.score);
-  $('#profile-choice').setText(user.choice);
-  console.log('updated profile with: ', user);
-}
+    if (winnerKey) {
+      users[winnerKey].score++;
+    }
 
-function submitChoice() {
-  database.ref(playerKey).update({
-    choice: $('input[name="r"]:checked').val(),
+    return users;
   });
 }
 
-function initializeComponents() {
-  // initialze the default visbility of components on our page
-  toggleGame(false);
-}
-
+// the game
 function playGame(playerLeft, playerRight) {
   if (playerLeft.choice === 'rock' && playerRight.choice === 'paper') {
     return playerRight;
@@ -75,90 +58,130 @@ function playGame(playerLeft, playerRight) {
     return playerRight;
   } else if (playerLeft.choice === 'rock' && playerRight.choice === 'diss') {
     return playerLeft;
-  } else if (playerLeft.choice === playerRight.choice) {
+  } else {
     return {};
   }
 }
 
-// database logic
-database.ref().on('value', function(snapshot) {
-  var snap = snapshot.val();
-  var currentPlayer = snap[playerKey];
-  if (playerKey === null || currentPlayer.choice === null) {
+// functions that control components
+function toggleComponent(id, show) {
+  // toggle between showing a component
+  // using jquery to select the component
+  // with supplied id and using css to style it
+  $(id).css({ visibility: show ? 'visible' : 'hidden' });
+}
+
+function updatePageState(user) {
+  // Boolean will be false if playerKey is null or undefined
+  toggleComponent('#hello', !Boolean(playerKey)); // hello is the name of the login component
+  toggleComponent('#player1', Boolean(playerKey)); // player1 is the name of the game component
+  if (!playerKey) {
+    console.log('waiting for log in...');
+    return; // don't update rest of page if no playerKey
+  }
+
+  console.log('attempting to update profile with: ', user);
+  console.log($('#profile-name'));
+  $('#profile-name').html(user.name);
+  $('#profile-score').html(user.score);
+  $('#profile-choice').html(user.choice ? user.choice : 'not yet submitted');
+  console.log('updated profile with: ', user);
+}
+
+function updateGameState(snapshot) {
+  // 'hello' is the id of the login component
+  // 'player1' is the id of the game component
+  // 'profile' is the id of the profile component
+  if (playerKey === null) {
+    console.log('waiting for log in');
+    updatePageState({});
     return;
   }
 
-  var playerKeys = Object.keys(snap)
+  var snap = snapshot.val();
+  var player = snap[playerKey];
+  updatePageState(player);
+
+  if (!player.choice) {
+    return;
+  }
+
+  var opponentKeyList = Object.keys(snap)
     .filter(function(key) {
       return key !== playerKey;
     })
     .filter(function(key) {
-      return snap[key].choice;
+      return Boolean(snap[key].choice);
     });
-  var playersList = playerKeys.map(function(key) {
-    return snap[key];
-  });
 
-  var opponentIndex = randomIndex(playersList);
-  var opponentPlayerKey = playerKeys[opponentIndex];
-  var opponent = snap[opponentPlayerKey];
-  console.log('n other keys', playerKeys.length);
+  var opponentKey = opponentKeyList[0]; // get first queued opponent
 
-  console.log('VALUE CHANGE', currentPlayer, opponent);
+  if (opponentKey) {
+    console.log('opponent found!', opponentKey);
+    var opponent = snap[opponentKey];
 
-  if (opponentPlayerKey === null) {
-    console.log('opponent player key is nulll');
-    return;
-  }
-
-  if (opponentPlayerKey === undefined) {
-    console.log('opponent player key is underfined');
-    return;
-  }
-
-  if (opponentPlayerKey !== null || opponentPlayerKey !== undefined) {
-    console.log('PLAY GAME', playerKey, opponentPlayerKey);
-
-    console.log('players', currentPlayer, opponent);
-    var winner = playGame(currentPlayer, opponent);
-    console.log(winner, currentPlayer === winner, opponent === winner);
-    if (winner === currentPlayer) {
-      console.log('we won', winner);
-      currentPlayer.score = currentPlayer.score + 1;
+    winner = playGame(player, opponent);
+    if (winner === player) {
+      console.log('player won');
+      updatePlayers(playerKey, opponentKey, playerKey);
+      // animateOutcome('won!');
+      alert('won!');
     } else if (winner === opponent) {
-      console.log('opponent won', winner);
-      opponent.score = opponent.score + 1;
+      console.log('opponent won');
+      //animateOutcome('lost!');
+      alert('lost!');
+      // dont report victory if loser
+      // updatePlayers(playerKey, opponentKey, opponentKey);
+    } else {
+      console.log('tie');
+      updatePlayers(playerKey, opponentKey, null);
+      //animateOutcome('tie!');
+      alert('tie!');
     }
-    currentPlayer.choice = null;
-    opponent.choice = null;
-    database.ref(playerKey).update(currentPlayer);
-    database.ref(opponentPlayerKey).update(opponent);
+  } else {
+    console.log('no opponent found!');
   }
-});
 
-// utility belt
-function getRandomInt(max) {
-  return Math.floor(Math.random() * Math.floor(max));
+  //   updateComponents(snap[playerKey]);
 }
 
-function isViable(player) {
-  return player.choice !== null && player.choice !== undefined;
+function animateOutcome(outcome, color = 'black') {
+  // short dumb animation...because i need something for myself...
+  $('#profile-choice').html(outcome);
+  $('#profile-choice').css({ color });
+  toggleComponent('go', false);
+  setTimeout(function() {
+    $('#profile-choice').html('not yet submitted');
+    $('#profile-choice').css({ color: 'black' });
+    toggleComponent('go', true);
+  }, 3000);
 }
 
-function randomIndex(playerList) {
-  var viablePlayers = playerList.filter(isViable);
-  var randomIndex = getRandomInt(viablePlayers.length - 1);
-  console.log(randomIndex, viablePlayers[randomIndex]);
-  return randomIndex;
+function login() {
+  var name = $('#name-input').val();
+  if (name === '') {
+    console.log('empty user name...not going to log you in...');
+    return;
+  }
 
-  console.log('something went very wrong');
-  return null;
+  console.log('attempting to login');
+  var key = initializeUser(name);
+  playerKey = key;
+  console.log('logged in as: ', name, key);
+  console.log('attaching update callback');
+  database.ref().on('value', updateGameState);
+}
+
+function submitChoice() {
+  database.ref(playerKey).update({
+    choice: $('input[name="r"]:checked').val(),
+  });
 }
 
 // attach callbacks
 $('#add-player').on('click', function() {
   event.preventDefault();
-  initializeUser();
+  login();
 });
 
 $('#go').on('click', function() {
@@ -167,4 +190,4 @@ $('#go').on('click', function() {
 });
 
 // runtime
-initializeComponents();
+updatePageState({});
