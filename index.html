@@ -22,7 +22,7 @@
   </head>
   <body>
     <header>
-      <h1>Rock. Paper. Diss.</h1>
+      <h1>Rock.Paper.Diss.</h1>
       <h3>Where well-crafted insults cut better than scissors.</h3>
     </header>
 
@@ -47,6 +47,8 @@
         </div>
       </div>
       <!-- player 1 (left) -->
+      <h1 id="result"></h1>
+
       <div id="player1">
         <!-- profile -->
         <div id="profile">
@@ -91,9 +93,18 @@
           </div>
           <button class="btn" id="go" type="submit">Submit</button>
         </div>
-      </div>
     </div>
 
+    <div id="player2">
+        <!-- profile -->
+        <div id="profile2">
+          <h1 id="profile2-name"></h1>
+          <h2 id="score2-header">score:</h2>
+          <h3 id="profile2-score"></h3>
+          <h2 id="choice2-header">current choice:</h2>
+          <h3 id="profile2-choice"></h3>
+        </div>
+    </div>
     <!-- firebase -->
     <script src="https://www.gstatic.com/firebasejs/5.8.1/firebase.js"></script>
     <!-- my js -->

@@ -71,6 +71,7 @@ function updatePageState(user) {
   toggleComponent('#player1', Boolean(playerKey)); // player1 is the name of the game component
   if (!playerKey) {
     console.log('waiting for log in...');
+    toggleComponent('#player2', false);
     return; // don't update rest of page if no playerKey
   }
 
@@ -107,31 +108,36 @@ function updateGameState(snapshot) {
     .filter(function(key) {
       return Boolean(snap[key].choice);
     });
-
   var opponentKey = opponentKeyList[0]; // get first queued opponent
-
   if (opponentKey) {
     console.log('opponent found!', opponentKey);
     var opponent = snap[opponentKey];
-
+    $('#profile2-name').text(snap[opponentKey].name);
+    $('#profile2-score').text(snap[opponentKey].score);
+    $('#profile2-choice').text(snap[opponentKey].choice);
+    toggleComponent('#player2', true);
     winner = playGame(player, opponent);
     if (winner === player) {
       console.log('player won');
       // report victory only if we're the winner
       updatePlayers(playerKey, opponentKey, playerKey);
-      alert('won!');
+      $('#result').text('Winner!');
+    //   alert('won!');
     } else if (winner === opponent) {
       console.log('opponent won');
-      alert('lost!');
+      $('#result').text('You lost :(')
+    //   alert('lost!');
       // dont report victory if loser
       updatePlayers(playerKey, opponentKey, null);
     } else {
       console.log('tie');
       updatePlayers(playerKey, opponentKey, null);
-      alert('tie!');
+      $('#result').text('tie');
+    //   alert('tie!');
     }
   } else {
     console.log('no opponent found!');
+    toggleComponent('#player2', false);
   }
 }
 
