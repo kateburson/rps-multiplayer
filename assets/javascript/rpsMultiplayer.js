@@ -108,19 +108,14 @@ function updateGameState(snapshot) {
     .filter(function(key) {
       return Boolean(snap[key].choice);
     });
-
   var opponentKey = opponentKeyList[0]; // get first queued opponent
-
   if (opponentKey) {
     console.log('opponent found!', opponentKey);
     var opponent = snap[opponentKey];
-
     $('#profile2-name').text(snap[opponentKey].name);
     $('#profile2-score').text(snap[opponentKey].score);
     $('#profile2-choice').text(snap[opponentKey].choice);
     toggleComponent('#player2', true);
-    
-
     winner = playGame(player, opponent);
     if (winner === player) {
       console.log('player won');
