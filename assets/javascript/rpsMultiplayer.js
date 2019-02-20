@@ -1,272 +1,171 @@
+// Initialize Firebase
+var config = {
+  apiKey: 'AIzaSyBpA0990uBFSGg0nr0SFRVGhhmLjka097Y',
+  authDomain: 'rps-multiplayer-f1be7.firebaseapp.com',
+  databaseURL: 'https://rps-multiplayer-f1be7.firebaseio.com',
+  projectId: 'rps-multiplayer-f1be7',
+  storageBucket: 'rps-multiplayer-f1be7.appspot.com',
+  messagingSenderId: '1007061601250',
+};
+firebase.initializeApp(config);
 
-  // Initialize Firebase
-  var config = {
-    apiKey: "AIzaSyBpA0990uBFSGg0nr0SFRVGhhmLjka097Y",
-    authDomain: "rps-multiplayer-f1be7.firebaseapp.com",
-    databaseURL: "https://rps-multiplayer-f1be7.firebaseio.com",
-    projectId: "rps-multiplayer-f1be7",
-    storageBucket: "rps-multiplayer-f1be7.appspot.com",
-    messagingSenderId: "1007061601250"
-  };
-  firebase.initializeApp(config);
-
-// define variables
+// initialize variables
 var database = firebase.database();
-
-var started = false;
-// var p1clicked = false;
-// var p2clicked = false;
-var count = 0;
-
-var player1key = '';
-var player2key = '';
-
-var player1 = {
-    name: '',
-    turn: false,
-    score: 0,
-    choice: '',
-    diss: '',
-    clicked: false
-};
-var player2 = {
-    name: '',
-    turn: false,
-    score: 0,
-    choice: '',
-    diss: '',
-    clicked: false
-};
-
 var playerKey = null;
 
-function initializeUser() {
-    var name = $('#name-input').val();
-    var entry = database.ref().push({
-        'name': name,
-        'score': 0,
+// define functions
+// database logic
+function initializeUser(name) {
+  var userRef = database.ref().push({
+    name: name,
+    score: 0,
+  });
+
+  return userRef.key;
+}
+
+function updatePlayers(leftKey, rightKey, winnerKey) {
+  database.ref().transaction(function(users) {
+    // update winner
+    users[leftKey].choice = null;
+    users[rightKey].choice = null;
+
+    if (winnerKey) {
+      users[winnerKey].score++;
+    }
+
+    return users;
+  });
+}
+
+// the game
+function playGame(playerLeft, playerRight) {
+  if (playerLeft.choice === 'rock' && playerRight.choice === 'paper') {
+    return playerRight;
+  } else if (playerLeft.choice === 'paper' && playerRight.choice === 'rock') {
+    return playerLeft;
+  } else if (playerLeft.choice === 'paper' && playerRight.choice === 'diss') {
+    return playerRight;
+  } else if (playerLeft.choice === 'diss' && playerRight.choice === 'paper') {
+    return playerLeft;
+  } else if (playerLeft.choice === 'diss' && playerRight.choice === 'rock') {
+    return playerRight;
+  } else if (playerLeft.choice === 'rock' && playerRight.choice === 'diss') {
+    return playerLeft;
+  } else {
+    return {};
+  }
+}
+
+// functions that control components
+function toggleComponent(id, show) {
+  // toggle between showing a component
+  // using jquery to select the component
+  // with supplied id and using css to style it
+  $(id).css({ visibility: show ? 'visible' : 'hidden' });
+}
+
+function updatePageState(user) {
+  // Boolean will be false if playerKey is null or undefined
+  toggleComponent('#hello', !Boolean(playerKey)); // hello is the name of the login component
+  toggleComponent('#player1', Boolean(playerKey)); // player1 is the name of the game component
+  if (!playerKey) {
+    console.log('waiting for log in...');
+    return; // don't update rest of page if no playerKey
+  }
+
+  console.log('attempting to update profile with: ', user);
+  console.log($('#profile-name'));
+  $('#profile-name').html(user.name);
+  $('#profile-score').html(user.score);
+  $('#profile-choice').html(user.choice ? user.choice : 'not yet submitted');
+  console.log('updated profile with: ', user);
+}
+
+function updateGameState(snapshot) {
+  // 'hello' is the id of the login component
+  // 'player1' is the id of the game component
+  // 'profile' is the id of the profile component
+  if (playerKey === null) {
+    console.log('waiting for log in');
+    updatePageState({});
+    return;
+  }
+
+  var snap = snapshot.val();
+  var player = snap[playerKey];
+  updatePageState(player);
+
+  if (!player.choice) {
+    return;
+  }
+
+  var opponentKeyList = Object.keys(snap)
+    .filter(function(key) {
+      return key !== playerKey;
     })
-    playerKey = entry.key;
-    console.log('player key: ', playerKey)
-};
+    .filter(function(key) {
+      return Boolean(snap[key].choice);
+    });
 
-$('#add-player').on('click', function() {
-    event.preventDefault();
-    initializeUser();
-});
+  var opponentKey = opponentKeyList[0]; // get first queued opponent
 
-// $('#add-player').on('click', function() {
+  if (opponentKey) {
+    console.log('opponent found!', opponentKey);
+    var opponent = snap[opponentKey];
 
-//     event.preventDefault();
-//     started = true;
-//     player1.turn = true;
+    winner = playGame(player, opponent);
+    if (winner === player) {
+      console.log('player won');
+      // report victory only if we're the winner
+      updatePlayers(playerKey, opponentKey, playerKey);
+      alert('won!');
+    } else if (winner === opponent) {
+      console.log('opponent won');
+      alert('lost!');
+      // dont report victory if loser
+      updatePlayers(playerKey, opponentKey, null);
+    } else {
+      console.log('tie');
+      updatePlayers(playerKey, opponentKey, null);
+      alert('tie!');
+    }
+  } else {
+    console.log('no opponent found!');
+  }
+}
 
-//     if(started === true) {
-//         $('#hello').css({'display':'none'});
-//     }
-//     if(count === 0) {
-//         var input = $('#name-input').val();     
-//         player1.name = input;
+function login() {
+  var name = $('#name-input').val();
+  if (name === '') {
+    console.log('empty user name...not going to log you in...');
+    return;
+  }
 
-//         database.ref().push({
-//             player1: player1,
-//         });
-//     } else if(count === 1 && count < 2) {
-//         var input = $('#name-input').val();     
-//         player2.name = input;
-
-//         database.ref().push({
-//             player2: player2,
-//         });
-//     }
-// });
-
-
-
-// database.ref().on('child_added', function(snapshot) {
-//     count++;
-//     console.log(count);
-//     console.log(snapshot.val(), snapshot.key);
-
-//     if(count === 1) {
-//         player1key = snapshot.key;
-//         var p1name = snapshot.val().player1.name;
-//         var p1score = snapshot.val().player1.score;
-    
-//         $('#p1-name').text(p1name);
-//         $('#p1-score').text('Score: ' + p1score);
-
-//     } else if(count === 2) {
-//     player2key = snapshot.key;
-//     var p2name = snapshot.val().player2.name;
-//     var p2score = snapshot.val().player2.score;
-
-//     $('#p2-name').text(p2name);
-//     $('#p2-score').text('Score: ' + p2score);
-//     }
-
-//     }, function(errorObject) {
-//     console.log('The read failed: ' + errorObject.code);
-
-// });
+  console.log('attempting to login');
+  var key = initializeUser(name);
+  playerKey = key;
+  console.log('logged in as: ', name, key);
+  console.log('attaching update callback');
+  database.ref().on('value', updateGameState);
+}
 
 function submitChoice() {
-    database.ref(playerKey).update({
-       choice: $('input[name="r"]:checked').val()
-    });
-};
+  database.ref(playerKey).update({
+    choice: $('input[name="r"]:checked').val(),
+  });
+}
 
+// attach callbacks
+$('#add-player').on('click', function() {
+  event.preventDefault();
+  login();
+});
 
-// function winner(playerLeft, playerRight) {
-//     if(playerLeft.choice === 'rock' && playerRight.choice === 'paper') {
-//         playerRight.score++;
-//         database.ref().update({
-//             player2:player2.score
-//         })
-//     } else if(playerLeft.choice === 'paper' && playerRight.choice === 'rock') {
-//         playerLeft.score++;
-//         database.ref().update({
-//             player1:player1.score
-//         })
-//     } else if(playerLeft.choice === 'paper' && playerRight.choice === 'diss') {
-//         playerRight.score++;
-//         database.ref().update({
-//             player2:player2.score
-//         })
-//     } else if(playerLeft.choice === 'diss' && playerRight.choice === 'paper') {
-//         playerLeft.score++;
-//         database.ref().update({
-//             player1:player1.score
-//         })
-//     } else if(playerLeft.choice === 'diss' && playerRight.choice === 'rock') {
-//         playerRight.score++;
-//         database.ref().update({
-//             player2:player2.score
-//         })
-//     } else if(playerLeft.choice === 'rock' && playerRight.choice === 'diss') {
-//         playerLeft.score++;
-//         database.ref().update({
-//             player1:player1.score
-//         })
-//     } else if(playerLeft.choice === playerRight.choice) {
-//         playerLeft.score = playerLeft.score;
-//         playerRight.score = playerRight.score;
-//     }
-// };
-
-function playGame(playerLeft, playerRight) {
-    if(playerLeft.choice === 'rock' && playerRight.choice === 'paper') {
-        return(playerRight);
-    } else if(playerLeft.choice === 'paper' && playerRight.choice === 'rock') {
-        return(playerLeft);
-    } else if(playerLeft.choice === 'paper' && playerRight.choice === 'diss') {
-        return(playerRight);
-    } else if(playerLeft.choice === 'diss' && playerRight.choice === 'paper') {
-        return(playerLeft);
-    } else if(playerLeft.choice === 'diss' && playerRight.choice === 'rock') {
-        return(playerRight);
-    } else if(playerLeft.choice === 'rock' && playerRight.choice === 'diss') {
-        return(playerLeft);
-    } else if(playerLeft.choice === playerRight.choice) {
-        return({});
-    }
-};
- 
 $('#go').on('click', function() {
-    event.preventDefault();
-    submitChoice();
+  event.preventDefault();
+  submitChoice();
 });
 
-
-// database.ref().on('value', function(snapshot) {
-//     console.log('data read');
-//     var snap = snapshot.val();
-//     var player1Db = snap[player1key].player1;
-//     var player2Db = snap[player2key].player2;
-//     if(player1Db.clicked === true && player2Db.clicked === true) {
-//         winner(player1Db, player2Db);
-//         $('#p1-choice').text(player1Db.choice);
-//         $('#p1-score').text(player1Db.score);
-//         $('#p2-choice').text(player2Db.choice);
-//         $('#p2-score').text(player2Db.score);
-//         player1.clicked = false;
-//         player2.clicked = false;
-//         player1Db.clicked = false;
-//         player2Db.clicked = false;
-//         database.ref().update({
-//             player1:player1,
-//             player2:player2
-//         })
-//     } 
-//     },
-//     function(errorObject) {
-//         console.log('The read failed: ' + errorObject.code);
-//     }
-// );
-
-database.ref().on('value', function(snapshot) {
-    var snap = snapshot.val();
-    var currentPlayer = snap[playerKey];    
-    if (playerKey === null || currentPlayer.choice === null) {
-        return
-    }
-
-    var playerKeys = Object.keys(snap).filter(function(key) {return key!== playerKey}).filter(function(key) {return snap[key].choice})
-    var playersList = playerKeys.map(function(key) {return snap[key]})
-
-    var opponentIndex = randomIndex(playersList)
-    var opponentPlayerKey = playerKeys[opponentIndex]
-    var opponent = snap[opponentPlayerKey];
-    console.log('n other keys', playerKeys.length)
-
-    console.log("VALUE CHANGE", currentPlayer, opponent)
-
-    if (opponentPlayerKey === null) {
-        console.log('opponent player key is nulll')
-        return 
-    }
-
-    if (opponentPlayerKey === undefined) {
-        console.log('opponent player key is underfined')
-        return 
-    }
-
-    if (opponentPlayerKey !== null || opponentPlayerKey !== undefined) {
-        console.log("PLAY GAME", playerKey, opponentPlayerKey)
-        
-        console.log("players", currentPlayer, opponent);
-        var winner = playGame(currentPlayer, opponent);
-        console.log(winner, currentPlayer === winner, opponent === winner);
-        if(winner === currentPlayer) {
-            console.log("we won", winner)
-            currentPlayer.score = currentPlayer.score + 1;
-        } else if (winner === opponent) {
-            console.log('opponent won', winner)
-            opponent.score = opponent.score + 1;
-        }
-        currentPlayer.choice = null;
-        opponent.choice = null;
-        database.ref(playerKey).update(currentPlayer);
-        database.ref(opponentPlayerKey).update(opponent);
-    }
-
-});
-
-function getRandomInt(max) {
-    return Math.floor(Math.random() * Math.floor(max));
-  }
-  
-
-function isViable(player) {
-    return player.choice !== null && player.choice !== undefined
-}
-
-function randomIndex(playerList) {
-    var viablePlayers = playerList.filter(isViable)
-    var randomIndex = getRandomInt(viablePlayers.length - 1)
-    console.log(randomIndex, viablePlayers[randomIndex])
-    return randomIndex;
-
-    console.log('something went very wrong')
-    return null;
-}
+// post init runtime
+updatePageState({});
