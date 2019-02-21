@@ -62,7 +62,8 @@ function toggleComponent(id, show) {
   // toggle between showing a component
   // using jquery to select the component
   // with supplied id and using css to style it
-  $(id).css({ visibility: show ? 'visible' : 'hidden' });
+  // $(id).css({ visibility: show ? 'visible' : 'hidden' });
+  $(id).css({display: show ? 'block' : 'none'});
 }
 
 function updatePageState(user) {
@@ -78,8 +79,8 @@ function updatePageState(user) {
   console.log('attempting to update profile with: ', user);
   console.log($('#profile-name'));
   $('#profile-name').html(user.name);
-  $('#profile-score').html(user.score);
-  $('#profile-choice').html(user.choice ? user.choice : 'not yet submitted');
+  $('#profile-score').html('Score: ' + user.score);
+  $('#profile-choice').html('Choice: ' + user.choice ? user.choice : 'Choice: not yet submitted');
   console.log('updated profile with: ', user);
 }
 
@@ -113,8 +114,9 @@ function updateGameState(snapshot) {
     console.log('opponent found!', opponentKey);
     var opponent = snap[opponentKey];
     $('#profile2-name').text(snap[opponentKey].name);
-    $('#profile2-score').text(snap[opponentKey].score);
-    $('#profile2-choice').text(snap[opponentKey].choice);
+    $('#profile2-score').text('Score: ' + snap[opponentKey].score);
+    $('#profile2-choice').text('Choice: ' + snap[opponentKey].choice);
+    $('#profile2-diss').text(snap[opponentKey].diss);
     toggleComponent('#player2', true);
     winner = playGame(player, opponent);
     if (winner === player) {
@@ -159,6 +161,7 @@ function login() {
 function submitChoice() {
   database.ref(playerKey).update({
     choice: $('input[name="r"]:checked').val(),
+    diss: $('#message').val(),
   });
 }
 

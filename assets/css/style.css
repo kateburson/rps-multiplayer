@@ -1,17 +1,63 @@
-h1,
-h3 {
-  text-align: center;
-}
+
 
 #player1 {
-  width: 50%;
+  width: 40%;
+  margin-right: 25px;
   float: left;
-  padding: 25px;
-  border-right: solid 3pt;
+  padding: 50px;
+  border: solid purple 3pt;
+  color: purple;
+  /* border-right: solid 3pt; */
 }
 
 #player2 {
   width: 50%;
   float: right;
+  padding: 50px;
+  border: solid blue 3pt;
+  color: blue;
+
+}
+
+header {
   padding: 25px;
+  text-align: center;
+}
+
+.card {
+  margin: 25px auto;
+  min-width: 50%;
+  max-width: 500px;
+  border: solid red 3pt;
+  border-radius: 30px;
+}
+
+.card-header {
+  background-color: red;
+  font-size: 36pt;
+  color: white;
+  text-align: center;
+}
+
+.card-body {
+  background-color: lighgrey;
+  border-radius: inherit;
+}
+
+.btn {
+  border: solid lightgrey 1pt;
+}
+
+#form {
+  padding: 25px;
+}
+
+#message {
+  padding: 5px;
+  width: 100%;
+  height: auto;
+}
+
+#go {
+  margin-top: 25px;
 }
