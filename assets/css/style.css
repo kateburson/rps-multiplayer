@@ -19,9 +19,26 @@
 
 }
 
+/* body {
+  background-color: black;
+} */
+
 header {
-  padding: 25px;
+  position: relative;
+  width: 50%;
+  margin: 25px auto;
+  /* padding: 25px; */
   text-align: center;
+  color: black;
+  z-index: 2;
+}
+
+.container {
+  position: relative;
+  margin-top: -100px;
+  padding: 100px 50px 50px 50px;
+  width: 80%;
+  z-index: 0; 
 }
 
 .card {
@@ -29,14 +46,12 @@ header {
   min-width: 50%;
   max-width: 500px;
   border: solid red 3pt;
-  border-radius: 30px;
 }
 
 .card-header {
   background-color: red;
   font-size: 36pt;
   color: white;
-  text-align: center;
 }
 
 .card-body {
@@ -46,6 +61,15 @@ header {
 
 .btn {
   border: solid lightgrey 1pt;
+}
+
+#result {
+  padding: 50px;
+  border: solid magenta 3pt;
+  color: magenta;
+  width: 80%;
+  text-align: center;
+  margin: 25px auto;
 }
 
 #form {

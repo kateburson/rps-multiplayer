@@ -72,7 +72,9 @@ function updatePageState(user) {
   toggleComponent('#player1', Boolean(playerKey)); // player1 is the name of the game component
   if (!playerKey) {
     console.log('waiting for log in...');
+    // toggleComponent('header', false);
     toggleComponent('#player2', false);
+    toggleComponent('#result', false);
     return; // don't update rest of page if no playerKey
   }
 
@@ -97,7 +99,7 @@ function updateGameState(snapshot) {
   var snap = snapshot.val();
   var player = snap[playerKey];
   updatePageState(player);
-
+  toggleComponent('header', true);
   if (!player.choice) {
     return;
   }
@@ -113,11 +115,7 @@ function updateGameState(snapshot) {
   if (opponentKey) {
     console.log('opponent found!', opponentKey);
     var opponent = snap[opponentKey];
-    $('#profile2-name').text(snap[opponentKey].name);
-    $('#profile2-score').text('Score: ' + snap[opponentKey].score);
-    $('#profile2-choice').text('Choice: ' + snap[opponentKey].choice);
-    $('#profile2-diss').text(snap[opponentKey].diss);
-    toggleComponent('#player2', true);
+  
     winner = playGame(player, opponent);
     if (winner === player) {
       console.log('player won');
@@ -141,6 +139,13 @@ function updateGameState(snapshot) {
     console.log('no opponent found!');
     toggleComponent('#player2', false);
   }
+  $('#profile2-name').text(snap[opponentKey].name);
+  $('#profile2-score').text('Score: ' + snap[opponentKey].score);
+  $('#profile2-choice').text('Choice: ' + snap[opponentKey].choice);
+  $('#profile2-diss').text(snap[opponentKey].diss);
+  toggleComponent('#player2', true);
+  toggleComponent('#result', true);
+  toggleComponent('#form', false);
 }
 
 function login() {
